@@ -1,4 +1,5 @@
 import datetime as dt
+import logging
 import time
 
 import requests
@@ -61,7 +62,7 @@ def send_message(text: str, token: str, chat_id: str):
                 "parse_mode": "HTML"
             })
         except requests.exceptions.RequestException as e:
-            print(f'TG sendMessage error: {e}')
+            logging.exception(f'TG sendMessage error: {e}')
             time.sleep(1)
             continue
         else:

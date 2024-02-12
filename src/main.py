@@ -1,6 +1,7 @@
 import datetime as dt
 import itertools
 import json
+import logging
 import time
 
 from dotenv import load_dotenv
@@ -14,21 +15,22 @@ from dto import Region
 import tg
 
 
+logging.basicConfig(level=logging.INFO,
+                    format="%(asctime)s\t%(name)s\t%(levelname)s\t%(message)s")
 region_ids = json.loads(os.environ['GOCHS_REGIONS'])
 
 
 if __name__ == '__main__':
     last_date = dt.datetime.now(tz=dt.timezone(dt.timedelta(hours=3)))  # - dt.timedelta(hours=24)
-    print('Bot started')
+    logging.info('Bot started')
     tg.send_message(
         text='Bot started',
         token=os.environ['TG_BOT_TOKEN'],
         chat_id=os.environ['TG_ADMIN_CHAT_ID']
     )
 
-
     while True:
-        print('Checking new messages')
+        logging.info('Checking new messages')
         try:
             resp = requests.get(
                 url='https://push.mchs.ru/new-history',
@@ -53,7 +55,7 @@ if __name__ == '__main__':
             else:
                 err_text = f'Unknown error: {e}'
 
-            print(err_text)
+            logging.exception(err_text)
             tg.send_message(
                 text=err_text,
                 token=os.environ['TG_BOT_TOKEN'],
@@ -65,7 +67,7 @@ if __name__ == '__main__':
         if notifications['code'] != 200:
             err_text = f'MCHS notifications request error: ' \
                        f'code {notifications["code"]}: {notifications["answer"]}'
-            print(err_text)
+            logging.error(err_text)
             tg.send_message(
                 text=err_text,
                 token=os.environ['TG_BOT_TOKEN'],
@@ -83,7 +85,7 @@ if __name__ == '__main__':
         messages = sorted(messages, key=lambda m: m.date)
 
         for message in messages:
-            print(message)
+            logging.info(message)
             last_date = message.date + dt.timedelta(seconds=1)
             tg.send_message(
                 text=tg.prep_msg_text(message),
@@ -91,5 +93,5 @@ if __name__ == '__main__':
                 chat_id=os.environ['TG_CHAT_ID']
             )
 
-        print('Waiting 10 sec for next message check...')
+        logging.info('Waiting 10 sec for next message check...')
         time.sleep(10)
