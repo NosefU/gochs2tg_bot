@@ -18,7 +18,14 @@ region_ids = json.loads(os.environ['GOCHS_REGIONS'])
 
 
 if __name__ == '__main__':
-    last_date = dt.datetime.now(tz=dt.timezone(dt.timedelta(hours=3))) - dt.timedelta(hours=24)
+    last_date = dt.datetime.now(tz=dt.timezone(dt.timedelta(hours=3)))  # - dt.timedelta(hours=24)
+    print('Bot started')
+    tg.send_message(
+        text='Bot started',
+        token=os.environ['TG_BOT_TOKEN'],
+        chat_id=os.environ['TG_ADMIN_CHAT_ID']
+    )
+
 
     while True:
         print('Checking new messages')
