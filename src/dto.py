@@ -38,9 +38,7 @@ class Region:
 
     @classmethod
     def from_dict(cls, data):
-        obj = cls(
-            guid=data.get('region')
-        )
+        obj = cls(guid=data.get('region'))
         for raw_message in data.get('messages') or []:
             obj.messages.append(Message.from_dict(raw_message, obj))
         return obj

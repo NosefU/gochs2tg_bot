@@ -3,12 +3,10 @@ import itertools
 import json
 import logging
 import time
+import os
 
 from dotenv import load_dotenv
 import requests
-
-import os
-
 
 load_dotenv()
 from dto import Region
@@ -52,7 +50,6 @@ if __name__ == '__main__':
                 err_text = f'MCHS json decode error: Body: {resp.text}. Exception: {e}'
             elif isinstance(e, requests.exceptions.RequestException):
                 err_text = f'MCHS notifications request error: {e}'
-
             else:
                 err_text = f'Unknown error: {e}'
 

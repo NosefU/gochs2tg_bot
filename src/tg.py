@@ -6,6 +6,7 @@ import requests
 
 from dto import Message
 
+
 month_names = {
     1: 'января',
     2: 'февраля',
@@ -24,7 +25,6 @@ month_names = {
 
 def add_emoji(text: str) -> str:
     emoji = ''
-
     if 'отбой' in text.lower():
         emoji = '🟢'
     elif 'обстрел' in text.lower():
@@ -42,12 +42,10 @@ def add_emoji(text: str) -> str:
 
 def prep_date(date: dt.datetime) -> str:
     return f'{date.day} {month_names[date.month]} {date.strftime("%Y %H:%M")}'
-    # return date.strftime("%d.%m.%y %H:%M")
 
 
 def prep_msg_text(msg: Message) -> str:
     text = msg.text.removeprefix('РСЧС:').lstrip().removeprefix('Внимание!').lstrip().replace('\r\n', ' ')
-    # return f'<b>{msg.region.name}</b>\n' \
     return f'{add_emoji(text)}\n' \
            f'<i>{prep_date(msg.date)}</i>'
 
