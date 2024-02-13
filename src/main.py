@@ -47,11 +47,12 @@ if __name__ == '__main__':
                 }
             )
             notifications = resp.json()
-        except (requests.exceptions.RequestException, json.decoder.JSONDecodeError) as e:
-            if isinstance(e, requests.exceptions.RequestException):
-                err_text = f'MCHS notifications request error: {e}'
-            elif isinstance(e, json.decoder.JSONDecodeError):
+        except requests.exceptions.RequestException as e:
+            if isinstance(e, requests.exceptions.JSONDecodeError):
                 err_text = f'MCHS json decode error: Body: {resp.text}. Exception: {e}'
+            elif isinstance(e, requests.exceptions.RequestException):
+                err_text = f'MCHS notifications request error: {e}'
+
             else:
                 err_text = f'Unknown error: {e}'
 
