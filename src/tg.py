@@ -50,6 +50,41 @@ def prep_msg_text(msg: Message) -> str:
            f'<i>{prep_date(msg.date)}</i>'
 
 
+def prep_stat_text(date, in_stats: dict) -> str:
+    """
+    Формирует текст поста для канала статистики
+    :param date: дата, за которую собрана статистика
+    :param in_stats: словарь вида {'Вся область': {'shelling': 2, 'missile': 1, 'avia': 3}, ...}
+    :return: текст сообщения
+    """
+    # сортируем регионы по алфавиту
+    day_stats = {n: s for n, s in sorted(in_stats.items(), key=lambda i: i[0])}
+
+    # выносим пункт "Вся область" на первое место
+    all_region_value = day_stats.pop('Вся область', None)
+    if all_region_value is not None:
+        day_stats = {'Вся область': all_region_value, **day_stats}
+
+    # в каждом районе сортируем тревоги, чтобы везде было одинаково
+    for d in day_stats.keys():
+        day_stats[d] = {n: s for n, s in sorted(day_stats[d].items(), key=lambda i: i[0])}
+
+    # вычисляем длину самого большого названия района, чтобы выровнять все названия по правому краю
+    max_len = max(map(len, day_stats.keys()))
+    emoji_map = {'shelling': '💥', 'missile': '🚀', 'avia': '✈'}
+    # форматируем дату в вид 17 марта 2024
+    text = f'📆<b> {date.day} {month_names[date.month]} {date.year}</b>\n<pre>'
+    for distr_name, distr_stats in day_stats.items():
+        # склеиваем счётчики тревог во что-то типа 🚀2 💥1 ✈3
+        text_stats = ' '.join(f'{emoji_map[dng]}{cnt}' for dng, cnt in distr_stats.items() if cnt)
+        # выравниваем названия района по правому краю и приклеивает тревоги
+        # что-то типа '     Вся область  🚀1 '
+        text += f'{distr_name.rjust(max_len)}  {text_stats} \n'
+    text += '</pre>'
+    return text
+
+
+
 def send_message(text: str, token: str, chat_id: str):
     url = f'https://api.telegram.org/bot{token}/sendMessage'
     while True:
