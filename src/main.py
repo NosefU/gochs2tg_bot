@@ -162,7 +162,7 @@ if __name__ == '__main__':
     scheduler = SafeScheduler(reschedule_on_failure=True, seconds_after_failure=5)
     scheduler.every(10).seconds.do(process_new_mchs_messages)
     scheduler.every().day.at("08:00", locale).do(process_stats)
-    scheduler.every().hour.at(":00", locale).do(healthcheck)
+    scheduler.every(60).minutes.do(healthcheck)
     while True:
         scheduler.run_pending()
         time.sleep(1)
