@@ -1,8 +1,7 @@
 import datetime as dt
 import json
 import os
-from dataclasses import dataclass, field
-from typing import List
+from dataclasses import dataclass
 
 
 region_ids = json.loads(os.environ['GOCHS_REGIONS'])
@@ -15,30 +14,32 @@ class Message:
     region: 'Region' = None
 
     @classmethod
-    def from_dict(cls, data, region: 'Region' = None):
+    def from_dict(cls, data):
         return cls(
             text=data.get('text'),
             date_str=data.get('date'),
-            region=region
+            region=Region(data['region'])
         )
 
     @property
     def date(self):
         return dt.datetime.strptime(self.date_str + '00', '%Y-%m-%d %H:%M:%S%z')
 
+    @property
+    def notf_type(self):
+        if 'обстрел' in self.text.lower():
+            return 'shelling'
+        if 'ракетная опасность' in self.text.lower():
+            return 'missile'
+        if 'авиационная опасность' in self.text.lower():
+            return 'avia'
+        return None
+
 
 @dataclass
 class Region:
     guid: str
-    messages: List[Message] = field(default_factory=list)
 
     @property
     def name(self):
         return region_ids.get(self.guid)
-
-    @classmethod
-    def from_dict(cls, data):
-        obj = cls(guid=data.get('region'))
-        for raw_message in data.get('messages') or []:
-            obj.messages.append(Message.from_dict(raw_message, obj))
-        return obj
