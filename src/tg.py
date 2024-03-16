@@ -84,15 +84,15 @@ def prep_stat_text(date, in_stats: dict) -> str:
     return text
 
 
-
-def send_message(text: str, token: str, chat_id: str):
+def send_message(text: str, token: str, chat_id: str, silent=False):
     url = f'https://api.telegram.org/bot{token}/sendMessage'
     while True:
         try:
             requests.get(url, params={
                 "chat_id": chat_id,
                 "text": text,
-                "parse_mode": "HTML"
+                "parse_mode": "HTML",
+                "disable_notification": silent
             })
         except requests.exceptions.RequestException as e:
             logging.exception(f'TG sendMessage error: {e}')

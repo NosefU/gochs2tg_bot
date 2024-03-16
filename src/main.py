@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.INFO,
 region_ids = json.loads(os.environ['GOCHS_REGIONS'])
 # locale = dt.timezone(dt.timedelta(hours=3))
 locale = pytz.timezone('Europe/Moscow')
-last_date = dt.datetime.now(tz=locale) - dt.timedelta(hours=24)
+last_date = dt.datetime.now(tz=locale)  # - dt.timedelta(hours=24)
 
 
 def get_mchs_notifications(region_ids: List[str]):
@@ -144,6 +144,14 @@ def process_stats():
     logging.info('Waiting for next message check...')
 
 
+def healthcheck():
+    tg.send_message(
+        text='Healthcheck',
+        token=os.environ['TG_BOT_TOKEN'],
+        chat_id=os.environ['TG_ADMIN_CHAT_ID'],
+        silent=True
+    )
+
 if __name__ == '__main__':
     logging.info('Bot started')
     tg.send_message(
@@ -153,7 +161,8 @@ if __name__ == '__main__':
     )
     scheduler = SafeScheduler(reschedule_on_failure=True, seconds_after_failure=5)
     scheduler.every(10).seconds.do(process_new_mchs_messages)
-    scheduler.every().day.at("07:30", locale).do(process_stats)
+    scheduler.every().day.at("08:00", locale).do(process_stats)
+    scheduler.every().hour.at(":00", locale).do(healthcheck)
     while True:
         scheduler.run_pending()
         time.sleep(1)
