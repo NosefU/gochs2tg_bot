@@ -3,6 +3,8 @@ from traceback import format_exc
 
 import schedule
 
+import tg
+
 
 class SafeScheduler(schedule.Scheduler):
     """
