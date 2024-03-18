@@ -156,7 +156,7 @@ def healthcheck():
 if __name__ == '__main__':
     logging.info('МЧС31 Bot started')
     tg.send_message(
-        text='Bot started',
+        text='МЧС31 Bot started',
         token=os.environ['TG_BOT_TOKEN'],
         chat_id=os.environ['TG_ADMIN_CHAT_ID']
     )
