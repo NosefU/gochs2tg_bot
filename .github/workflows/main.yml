@@ -17,4 +17,4 @@ jobs:
 
     - name: Connect to server update bot
       run: |
-        ssh -o StrictHostKeyChecking=no {{ vars.SSH_USER }}@${{ vars.SERVER_IP }} 'cd ~/gochs2tg_bot/gochs2tg_bot && make update'
+        ssh -o StrictHostKeyChecking=no ${{ vars.SSH_USER }}@${{ vars.SERVER_IP }} 'cd ~/gochs2tg_bot/gochs2tg_bot && make update'
