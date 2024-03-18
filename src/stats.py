@@ -74,15 +74,16 @@ bel_region_districts = {
 
 
 def update_stats(msg: Message, districts, stats: dict):
+    # {'Вся область': {'shelling': [date, ...], 'missile':  [date, ...], 'avia':  [date, ...]}, ...}
     _stats = stats.copy()
     if msg.notf_type:  # дополнительно перепроверяем, что это тревога
         for dist_name in districts.keys():
             # пробегаемся по карте районов. Если ключи района есть в сообщении,
-            #   то в статистике для данного района увеличиваем соответствующий сообщению счётчик тревог
+            #   то в статистике для данного района добавляем в соответствующий сообщению список тревог дату
             if any(map(lambda key: key in msg.text.lower(), districts[dist_name]['keys'])):
                 if _stats.get(dist_name) is None:
                     _stats[dist_name] = {}
                 if _stats[dist_name].get(msg.notf_type) is None:
-                    _stats[dist_name][msg.notf_type] = 0
-                _stats[dist_name][msg.notf_type] += 1
+                    _stats[dist_name][msg.notf_type] = []
+                _stats[dist_name][msg.notf_type] += [msg.date, ]
     return _stats

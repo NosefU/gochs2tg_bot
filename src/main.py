@@ -152,6 +152,7 @@ def healthcheck():
         silent=True
     )
 
+
 if __name__ == '__main__':
     logging.info('Bot started')
     tg.send_message(
