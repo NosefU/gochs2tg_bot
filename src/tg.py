@@ -89,9 +89,9 @@ def prep_stat_text(date, in_stats: dict) -> str:
         # и приклеиваем счётчики тревог и журнал времени.
         # Что-то типа:
         # '     Вся область  🚀1 \n'
-        # '         🚀 в 23:36 '
+        # '      🚀 в 23:36 '
         date_stats = '\n'.join(
-            f'{emoji_map[notf_type]} в {date.strftime("%H:%M")}'.rjust(max_len)
+            f'{emoji_map[notf_type]} в {date.strftime("%H:%M")}'.rjust(max_len-1)  # max_len-1: 🚀 занимает 2 знакоместа
             for notf_type, dates in notifications.items() if dates for date in dates
         )
         text += f'{district.rjust(max_len)}  {text_stats} \n{date_stats}\n\n'
