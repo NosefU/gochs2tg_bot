@@ -122,15 +122,6 @@ def process_stats():
     # отфильтровываем только сообщения с тревогами
     messages = list(filter(lambda m: m.notf_type is not None, messages))
 
-    if not messages:
-        logging.info('Hooray! No dangerous events yesterday')
-        tg.send_message(
-            text='К счастью, в этот день ничего не было',
-            token=os.environ['TG_BOT_TOKEN'],
-            chat_id=os.environ['TG_ADMIN_CHAT_ID']
-        )
-        return
-
     day_stats = {}
     for message in messages:
         logging.info(message)
