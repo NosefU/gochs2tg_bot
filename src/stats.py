@@ -1,4 +1,7 @@
+import copy
+
 from dto import Message
+
 
 bel_region_districts = {
     'Вся область': {
@@ -75,7 +78,7 @@ bel_region_districts = {
 
 def update_stats(msg: Message, districts, stats: dict):
     # {'Вся область': {'shelling': [date, ...], 'missile':  [date, ...], 'avia':  [date, ...]}, ...}
-    _stats = stats.copy()
+    _stats = copy.deepcopy(stats)
     if msg.notf_type:  # дополнительно перепроверяем, что это тревога
         for dist_name in districts.keys():
             # пробегаемся по карте районов. Если ключи района есть в сообщении,
