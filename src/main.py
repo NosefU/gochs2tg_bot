@@ -20,7 +20,6 @@ logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s\t%(name)s\t%(levelname)s\t%(message)s")
 
 region_ids = json.loads(os.environ['GOCHS_REGIONS'])
-# locale = dt.timezone(dt.timedelta(hours=3))
 locale = pytz.timezone('Europe/Moscow')
 last_date = dt.datetime.now(tz=locale)  # - dt.timedelta(hours=24)
 
@@ -115,8 +114,8 @@ def process_stats():
 
     # фильтруем сообщения по дате (нас интересуют только вчерашние)
     now = dt.datetime.now(tz=locale)
-    yesterday_00 = dt.datetime(now.year, now.month, now.day, tzinfo=locale) - dt.timedelta(days=1)
-    yesterday_24 = yesterday_00 + dt.timedelta(days=1)
+    yesterday_24 = locale.localize(dt.datetime(now.year, now.month, now.day))
+    yesterday_00 = yesterday_24 - dt.timedelta(days=1)
     messages = filter(lambda m: yesterday_00 <= m.date < yesterday_24, messages)
 
     # отфильтровываем только сообщения с тревогами
