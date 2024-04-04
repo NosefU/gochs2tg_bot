@@ -8,6 +8,12 @@ region_ids = json.loads(os.environ['GOCHS_REGIONS'])
 
 
 @dataclass
+class NotificationType:
+    general: str
+    name: str = ''
+
+
+@dataclass
 class Message:
     text: str
     date_str: str
@@ -26,14 +32,16 @@ class Message:
         return dt.datetime.strptime(self.date_str + '00', '%Y-%m-%d %H:%M:%S%z')
 
     @property
-    def notf_type(self):
+    def notf_type(self) -> NotificationType:
+        if 'отбой' in self.text.lower():
+            return NotificationType('cancel')
         if 'обстрел' in self.text.lower():
-            return 'shelling'
+            return NotificationType('alarm', 'shelling')
         if 'ракетная опасность' in self.text.lower():
-            return 'missile'
-        if 'авиационная опасность' in self.text.lower():
-            return 'avia'
-        return None
+            return NotificationType('alarm', 'missile')
+        if 'авиационная опасность' in self.text.lower() or 'опасность атаки бпла' in self.text.lower():
+            return NotificationType('alarm', 'avia')
+        return NotificationType('alarm', 'other')
 
 
 @dataclass

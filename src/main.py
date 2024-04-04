@@ -119,7 +119,7 @@ def process_stats():
     messages = filter(lambda m: yesterday_00 <= m.date < yesterday_24, messages)
 
     # отфильтровываем только сообщения с тревогами
-    messages = list(filter(lambda m: m.notf_type is not None, messages))
+    messages = list(filter(lambda m: m.notf_type.general == 'alarm', messages))
 
     day_stats = {}
     for message in messages:
@@ -150,6 +150,7 @@ if __name__ == '__main__':
         token=os.environ['TG_BOT_TOKEN'],
         chat_id=os.environ['TG_ADMIN_CHAT_ID']
     )
+
     scheduler = SafeScheduler(reschedule_on_failure=True, seconds_after_failure=5)
     scheduler.every(10).seconds.do(process_new_mchs_messages)
     scheduler.every().day.at("08:00", locale).do(process_stats)

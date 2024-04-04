@@ -23,21 +23,12 @@ month_names = {
 }
 
 
-def add_emoji(text: str) -> str:
-    emoji = ''
-    if 'отбой' in text.lower():
-        emoji = '🟢'
-    elif 'обстрел' in text.lower():
-        emoji = '💥'
-    elif 'ракетная опасность' in text.lower():
-        emoji = '🚀'
-    elif 'авиационная опасность' in text.lower():
-        emoji = '✈️'
-
-    if emoji:
-        return f'{emoji} {text}'
-    else:
-        return text
+notf_emoji_map = {
+    'cancel': '🟢',
+    'shelling': '💥',
+    'missile': '🚀',
+    'avia': '✈'
+}
 
 
 def prep_date(date: dt.datetime) -> str:
@@ -46,7 +37,10 @@ def prep_date(date: dt.datetime) -> str:
 
 def prep_msg_text(msg: Message) -> str:
     text = msg.text.removeprefix('РСЧС:').lstrip().removeprefix('Внимание!').lstrip().replace('\r\n', ' ')
-    return f'{add_emoji(text)}\n' \
+    notf_emoji = notf_emoji_map.get(msg.notf_type.name)
+    if notf_emoji:
+        text = notf_emoji + ' ' + text
+    return f'{text}\n' \
            f'<i>{prep_date(msg.date)}</i>'
 
 
@@ -82,18 +76,17 @@ def prep_stat_text(date, in_stats: dict) -> str:
 
     #  в каждом типе предупреждений сортируем даты по возрастанию
     for district in day_stats.keys():
-        for notf_type in day_stats[district].keys():
-            day_stats[district][notf_type] = sorted(day_stats[district][notf_type])
+        for notf_type_name in day_stats[district].keys():
+            day_stats[district][notf_type_name] = sorted(day_stats[district][notf_type_name])
 
     #  вычисляем длину самого большого названия района, чтобы выровнять все названия по правому краю
     max_len = max(map(len, day_stats.keys()))
-    emoji_map = {'shelling': '💥', 'missile': '🚀', 'avia': '✈'}
 
     for district, notifications in day_stats.items():
         # склеиваем счётчики тревог во что-то типа 🚀2 💥1 ✈3
         text_stats = ' '.join(
-            f'{emoji_map[notf_type]}{len(dates)}'
-            for notf_type, dates in notifications.items() if dates
+            f'{notf_emoji_map[notf_type_name]}{len(dates)}'
+            for notf_type_name, dates in notifications.items() if dates
         )
         # выравниваем названия района по правому краю
         # и приклеиваем счётчики тревог и журнал времени.
@@ -101,8 +94,8 @@ def prep_stat_text(date, in_stats: dict) -> str:
         # '     Вся область  🚀1 \n'
         # '      🚀 в 23:36 '
         date_stats = '\n'.join(
-            f'{emoji_map[notf_type]} в {date.strftime("%H:%M")}'.rjust(max_len-1)  # max_len-1: 🚀 занимает 2 знакоместа
-            for notf_type, dates in notifications.items() if dates for date in dates
+            f'{notf_emoji_map[notf_type_name]} в {date.strftime("%H:%M")}'.rjust(max_len-1)  # max_len-1: 🚀 занимает 2 знакоместа
+            for notf_type_name, dates in notifications.items() if dates for date in dates
         )
         text += f'{district.rjust(max_len)}  {text_stats} \n{date_stats}\n\n'
     text += '</pre>'
