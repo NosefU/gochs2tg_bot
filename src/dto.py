@@ -34,14 +34,14 @@ class Message:
     @property
     def notf_type(self) -> NotificationType:
         if 'отбой' in self.text.lower():
-            return NotificationType('cancel')
+            return NotificationType('cancel', 'cancel')
         if 'обстрел' in self.text.lower():
             return NotificationType('alarm', 'shelling')
         if 'ракетная опасность' in self.text.lower():
             return NotificationType('alarm', 'missile')
         if 'авиационная опасность' in self.text.lower() or 'опасность атаки бпла' in self.text.lower():
             return NotificationType('alarm', 'avia')
-        return NotificationType('alarm', 'other')
+        return NotificationType('other', 'other')
 
 
 @dataclass
