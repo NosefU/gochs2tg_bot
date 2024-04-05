@@ -114,7 +114,7 @@ def process_stats():
 
     # фильтруем сообщения по дате (нас интересуют только вчерашние)
     now = dt.datetime.now(tz=locale)
-    yesterday_24 = locale.localize(dt.datetime(now.year, now.month, now.day))
+    yesterday_24 = locale.localize(dt.datetime(now.year, now.month, now.day))  # https://russianpenguin.ru/2019/09/11/python-%D1%87%D0%B5%D0%BC-%D0%BF%D0%BB%D0%BE%D1%85-datetime-replace/
     yesterday_00 = yesterday_24 - dt.timedelta(days=1)
     messages = filter(lambda m: yesterday_00 <= m.date < yesterday_24, messages)
 
