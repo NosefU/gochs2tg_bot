@@ -27,7 +27,7 @@ notf_emoji_map = {
     'cancel': '🟢',
     'shelling': '💥',
     'missile': '🚀',
-    'avia': '✈'
+    'avia': '✈️'
 }
 
 
