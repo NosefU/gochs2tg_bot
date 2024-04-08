@@ -76,17 +76,30 @@ bel_region_districts = {
 }
 
 
+# TODO: переписать. Регион нотификации вкинуть в дто
 def update_stats(msg: Message, districts, stats: dict):
     # {'Вся область': {'shelling': [date, ...], 'missile':  [date, ...], 'avia':  [date, ...]}, ...}
     _stats = copy.deepcopy(stats)
     if msg.notf_type.general == 'alarm':  # дополнительно перепроверяем, что это тревога
+        msg_dists = []
         for dist_name in districts.keys():
             # пробегаемся по карте районов. Если ключи района есть в сообщении,
             #   то в статистике для данного района добавляем в соответствующий сообщению список тревог дату
             if any(map(lambda key: key in msg.text.lower(), districts[dist_name]['keys'])):
-                if _stats.get(dist_name) is None:
-                    _stats[dist_name] = {}
-                if _stats[dist_name].get(msg.notf_type.name) is None:
-                    _stats[dist_name][msg.notf_type.name] = []
-                _stats[dist_name][msg.notf_type.name] += [msg.date, ]
+                msg_dists.append(dist_name)
+
+        # для атаки БПЛА почему-то район писать забывают(
+        if not msg_dists and msg.notf_type.name == 'avia':
+            msg_dists = ['Вся область', ]
+
+        if not msg_dists:
+            return
+
+        for dist_name in msg_dists:
+            if _stats.get(dist_name) is None:
+                _stats[dist_name] = {}
+            if _stats[dist_name].get(msg.notf_type.name) is None:
+                _stats[dist_name][msg.notf_type.name] = []
+            _stats[dist_name][msg.notf_type.name] += [msg.date, ]
+
     return _stats
