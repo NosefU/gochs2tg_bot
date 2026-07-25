@@ -4,17 +4,20 @@ on:
   push:
     branches:
       - master
+  workflow_dispatch:  # позволяет запустить деплой кнопкой, не пушая код
 
 jobs:
   update-and-rerun:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Setup SSH
-      uses: webfactory/ssh-agent@v0.5.4
-      with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+    - name: Install sshpass
+      run: sudo apt-get update -qq && sudo apt-get install -y -qq sshpass
 
-    - name: Connect to server update bot
+    - name: Connect to server and update bot
+      env:
+        # sshpass -e читает пароль из SSHPASS, чтобы он не светился в списке процессов
+        SSHPASS: ${{ secrets.SSH_PASSWORD }}
       run: |
-        ssh -o StrictHostKeyChecking=no ${{ vars.SSH_USER }}@${{ vars.SERVER_IP }} 'cd ~/gochs2tg_bot/gochs2tg_bot && git pull && make build && make hard_restart'
+        sshpass -e ssh -o StrictHostKeyChecking=no ${{ vars.SSH_USER }}@${{ vars.SERVER_IP }} \
+          'cd ~/gochs2tg_bot/gochs2tg_bot && git pull && make build && make hard_restart'
