@@ -211,3 +211,20 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+# Файлы AI-ассистентов и агентов — в репозиторий не коммитим
+CLAUDE.md
+CLAUDE.local.md
+AGENTS.md
+.claude/
+.cursor/
+.cursorrules
+.aider*
+.gigaide/
+
+# Настройки IDE целиком (перекрывает частичный шаблон .idea/** выше)
+.idea/
+
+# macOS
+.DS_Store
+._*
+
