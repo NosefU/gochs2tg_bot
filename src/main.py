@@ -1,4 +1,5 @@
 import datetime as dt
+import html
 import json
 import logging
 import time
@@ -47,6 +48,15 @@ STATS_MAX_ATTEMPTS = 5
 stats_attempts = 0
 
 
+def notify_admin(text: str):
+    # parse_mode=HTML: тексты ошибок содержат произвольные данные, экранируем
+    tg.send_message(
+        text=html.escape(text),
+        token=os.environ['TG_BOT_TOKEN'],
+        chat_id=os.environ['TG_ADMIN_CHAT_ID']
+    )
+
+
 def get_mchs_notifications(region_ids: List[str]):
     global mchs_failures
 
@@ -77,19 +87,11 @@ def get_mchs_notifications(region_ids: List[str]):
         logging.exception(f'{err_text} (failures in a row: {mchs_failures})')
         # пишем админу только на переходе в состояние "недоступен", а не на каждый блип
         if mchs_failures == ALERT_AFTER_FAILURES:
-            tg.send_message(
-                text=f'{err_text}\n\nНеудачных попыток подряд: {mchs_failures}',
-                token=os.environ['TG_BOT_TOKEN'],
-                chat_id=os.environ['TG_ADMIN_CHAT_ID']
-            )
+            notify_admin(f'{err_text}\n\nНеудачных попыток подряд: {mchs_failures}')
         return None
     else:
         if mchs_failures >= ALERT_AFTER_FAILURES:
-            tg.send_message(
-                text=f'✅ Связь с МЧС восстановлена. Неудачных попыток было: {mchs_failures}',
-                token=os.environ['TG_BOT_TOKEN'],
-                chat_id=os.environ['TG_ADMIN_CHAT_ID']
-            )
+            notify_admin(f'✅ Связь с МЧС восстановлена. Неудачных попыток было: {mchs_failures}')
         mchs_failures = 0
         return data
 
@@ -106,11 +108,7 @@ def process_new_mchs_messages():
         err_text = f'MCHS notifications request error: ' \
                    f'code {notifications["code"]}: {notifications["answer"]}'
         logging.error(err_text)
-        tg.send_message(
-            text=err_text,
-            token=os.environ['TG_BOT_TOKEN'],
-            chat_id=os.environ['TG_ADMIN_CHAT_ID']
-        )
+        notify_admin(err_text)
         return
 
     messages = map(Message.from_dict, notifications['list'])
@@ -141,12 +139,8 @@ def retry_stats_later(reason: str):
     if stats_attempts >= STATS_MAX_ATTEMPTS:
         stats_attempts = 0
         logging.error(f'Stats job gave up after {STATS_MAX_ATTEMPTS} attempts: {reason}')
-        tg.send_message(
-            text=f'Статистика за вчера не собрана: {reason}\n\n'
-                 f'Попыток: {STATS_MAX_ATTEMPTS}. Следующая — завтра в 08:00.',
-            token=os.environ['TG_BOT_TOKEN'],
-            chat_id=os.environ['TG_ADMIN_CHAT_ID']
-        )
+        notify_admin(f'Статистика за вчера не собрана: {reason}\n\n'
+                     f'Попыток: {STATS_MAX_ATTEMPTS}. Следующая — завтра в 08:00.')
         return
 
     raise RuntimeError(f'{reason}. Attempt {stats_attempts}/{STATS_MAX_ATTEMPTS}, retry in 5s')
