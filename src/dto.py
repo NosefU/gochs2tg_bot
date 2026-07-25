@@ -40,7 +40,7 @@ class Message:
         if 'ракетная опасность' in self.text.lower():
             return NotificationType('alarm', 'missile')
         if 'авиационная опасность' in self.text.lower() or \
-                'опасность атаки бпла' or \
+                'опасность атаки бпла' in self.text.lower() or \
                 'угроза повторной атаки бпла' in self.text.lower():
             return NotificationType('alarm', 'avia')
         return NotificationType('other', 'other')
