@@ -97,18 +97,16 @@ def process_stats():
     logging.info('Calculating tomorrow stats')
     notifications = get_mchs_notifications(region_ids.keys())
     if not notifications:
+        # get_mchs_notifications уже залогировал ошибку и написал админу
         logging.warning('For some reason there are no messages')
+        raise RuntimeError('No response from MCHS. Will retry on the next tick...')
 
     if notifications['code'] != 200:
         err_text = f'MCHS notifications request error: ' \
                    f'code {notifications["code"]}: {notifications["answer"]}'
         logging.error(err_text)
-        tg.send_message(
-            text=err_text,
-            token=os.environ['TG_BOT_TOKEN'],
-            chat_id=os.environ['TG_ADMIN_CHAT_ID']
-        )
-        AttributeError('Will retry on the next tick...')
+        # трейсбек уйдёт админу через SafeScheduler, он же перезапустит джобу
+        raise RuntimeError(f'{err_text}. Will retry on the next tick...')
 
     messages = map(Message.from_dict, notifications['list'])
 
