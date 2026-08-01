@@ -164,7 +164,6 @@ def process_stats():
         retry_stats_later(err_text)
         return
 
-    stats_attempts = 0
     messages = map(Message.from_dict, notifications['list'])
 
     # фильтруем сообщения по дате (нас интересуют только вчерашние)
@@ -176,16 +175,34 @@ def process_stats():
     # отфильтровываем только сообщения с тревогами
     messages = list(filter(lambda m: m.notf_type.general == 'alarm', messages))
 
-    day_stats = {}
-    for message in messages:
-        logging.info(message)
-        day_stats = stats.update_stats(message, stats.bel_region_districts, day_stats)
+    # ошибка агрегации или отправки тоже должна упираться в STATS_MAX_ATTEMPTS:
+    # без этого SafeScheduler будет перезапускать джобу каждые 5 с бесконечно
+    unmatched = []
+    try:
+        day_stats = {}
+        for message in messages:
+            logging.info(message)
+            if not stats.match_districts(message, stats.bel_region_districts):
+                unmatched.append(message)
+            day_stats = stats.update_stats(message, stats.bel_region_districts, day_stats)
 
-    tg.send_message(
-        text=tg.prep_stat_text(yesterday_00, day_stats),
-        token=os.environ['TG_BOT_TOKEN'],
-        chat_id=os.environ['TG_STAT_CHAT_ID']
-    )
+        tg.send_message(
+            text=tg.prep_stat_text(yesterday_00, day_stats),
+            token=os.environ['TG_BOT_TOKEN'],
+            chat_id=os.environ['TG_STAT_CHAT_ID']
+        )
+    except Exception as e:
+        retry_stats_later(f'{type(e).__name__}: {e}')
+        return
+
+    stats_attempts = 0
+
+    # если МЧС снова сменил формулировки, карта районов молча теряет тревоги —
+    # шлём один агрегированный алерт, а не по сообщению на каждую
+    if unmatched:
+        notify_admin('Не удалось определить район, тревоги не попали в статистику:\n\n'
+                     + '\n'.join(f'{m.date_str} — {m.text}' for m in unmatched))
+
     logging.info('Waiting for next message check...')
 
 
