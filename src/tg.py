@@ -31,6 +31,15 @@ notf_emoji_map = {
 }
 
 
+def emoji_padding(emoji: str) -> int:
+    """
+    На сколько сузить rjust под эмодзи: в терминале и в <pre> он занимает 2 знакоместа,
+    а len() считает кодовые точки — у '🚀' она одна, у '✈️' их две (символ + U+FE0F).
+    Без поправки строки с разными эмодзи разъезжаются на один пробел.
+    """
+    return 2 - len(emoji)
+
+
 def prep_date(date: dt.datetime) -> str:
     return f'{date.day} {month_names[date.month]} {date.strftime("%Y %H:%M")}'
 
@@ -94,7 +103,8 @@ def prep_stat_text(date, in_stats: dict) -> str:
         # '     Вся область  🚀1 \n'
         # '      🚀 в 23:36 '
         date_stats = '\n'.join(
-            f'{notf_emoji_map[notf_type_name]} в {date.strftime("%H:%M")}'.rjust(max_len-1)  # max_len-1: 🚀 занимает 2 знакоместа
+            f'{notf_emoji_map[notf_type_name]} в {date.strftime("%H:%M")}'
+            .rjust(max_len - emoji_padding(notf_emoji_map[notf_type_name]))
             for notf_type_name, dates in notifications.items() if dates for date in dates
         )
         text += f'{district.rjust(max_len)}  {text_stats} \n{date_stats}\n\n'
